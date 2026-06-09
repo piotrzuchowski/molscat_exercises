@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/home/pzuch007/conda-envs/pandas-env/bin/python plot_opacity.py)",
+      "Bash(ps -u pzuch007 -o cmd)",
+      "Bash(echo \"controllers: $\\(ps -u pzuch007 -o cmd)",
+      "Bash(:)",
+      "Bash(bash ./run_all.sh)",
+      "Bash(squeue -u pzuch007 -h -o \"%T\")",
+      "Bash(scancel 5288814)",
+      "Bash(squeue -u pzuch007 -h)",
+      "Bash(echo \"my jobs: $\\(squeue -u pzuch007 -h)",
+      "Bash(awk '$2==\"up\"{print}')",
+      "Bash(sinfo -h -p lem-cpu-short -o \"%t %D\")",
+      "Bash(awk '{n[$1]+=$2} END{for\\(s in n\\)printf \"%s:%d \",s,n[s]; print\"\"}')",
+      "Bash(sinfo -p lem-cpu-short -o \"%.18P %.6a %.10t %.6D\")",
+      "Bash(sinfo -h -o \"%P %a\")",
+      "Bash(awk '$2==\"up\"')",
+      "Bash(/home/pzuch007/conda-envs/pandas-env/bin/python anisotropy_hist.py)"
+    ]
+  }
+}

@@ -13,7 +13,7 @@ C -------------------------------------------------------
       CHARACTER(80) FILNAM
 
       DATA LFIRST /.TRUE./
-      DATA FILNAM /'data/pot-Mg_NH.data'/
+      DATA FILNAM /'data/pot-A_BC.data'/
 
 C
 C  MGNH - POTENTIAL OBTAINED IN AVQZ (AVTZ ON CR) BASIS
@@ -36,7 +36,7 @@ C  ETC...
      1                            BETA,WT)
       LFIRST=.FALSE.
       OPEN(9,FILE=FILNAM,FORM='FORMATTED',STATUS='OLD',ERR=2010)
-      READ(9,*) NANGS
+      READ(9,*) NANGS,AA,BB
       ALLOCATE(ANGLS(NANGS))
       ALLOCATE(NRA(NANGS))
 C  DETERMINE MAXIMUM NRA(I) TO ALLOCATE PROPERLY ALPHA
@@ -69,10 +69,9 @@ C  AND VPT ARRAYS
            VPT(J,I) = EINT
         ENDDO
       ENDDO
-      CLOSE(9)
 
       WRITE(6,*) ' NUMBER OF ANGLES: ',NANGS
-C     WRITE(6,'(20F8.2)') (ANGLS(I),I=1,NANGS)
+      WRITE(6,'(20F8.2)') (ANGLS(I),I=1,NANGS)
 C     WRITE(6,*) ' NUMBER OF CALCULATED POINTS FOR EACH ANGLE: '
 C     WRITE(6,'(20I8)') (NRA(I),I=1,NANGS)
       LMAX = NANGS-1
@@ -115,11 +114,22 @@ C       WRITE(*,*) (RPT(JJ,I),JJ=1,NRA(I))
       IP=0
       MXLAM=LMAX
       ALLOCATE(WT(NANGS))
+     
       DO 70 IA=1,NANGS
-        WT(IA)=2.D0/(DBLE(NANGS*(NANGS-1))
-     1         *POL(NANGS,IA)*POL(NANGS,IA))
+C READ WEIGTHS for integration
+        READ(9,*) WT(IA)
+C        WT(IA)=2.D0/(DBLE(NANGS*(NANGS-1))
+C     1         *POL(NANGS,IA)*POL(NANGS,IA))
    70 CONTINUE
-
+      WRITE(*,*) ' WEIGHTS ' ,WT
+      READ(9,*) C60
+      READ(9,*) C71
+      READ(9,*) C62
+      READ(9,*) C73
+      CLOSE(9)
+      EMAX = 804.0d0
+      PI = 3.1415926535
+      
   15  RETURN
 
 C -------------------------------------------------------
@@ -136,11 +146,38 @@ C  RR - OUTPUT - RR FOR EACH ANGLE AT GIVEN X
 C  INTEGRATION - LOOP OVER QUADRATURES WT TIMES VALUE
 
       DO IA=1, NANGS
+      if (RR(IA).GT.EMAX) THEN
+         RR(IA) =  4.0*EMAX*ATAN(RR(IA)/EMAX) /PI
+      ENDIF
+      ENDDO
+
+      DO IA=1, NANGS
         TOTAL = TOTAL + POL(II,IA)*RR(IA)*WT(IA)
       ENDDO
       TOTAL = TOTAL * (2.0D0*(II-1) + 1.0D0 )/2.0D0
 
+      
+
+      if (X.GT.AA) then
+	if (II.EQ.1) then
+           TOTAL2 = -C60*X**(-6)
+	else if (II.EQ.2) then
+           TOTAL2 = -C71*X**(-7)
+	else if (II.EQ.3) then
+           TOTAL2 = -C62*X**(-6)
+	else if (II.EQ.4) then
+           TOTAL2 = -C73*X**(-7)
+	else
+           TOTAL2 = 0
+        endif
+c switching function
+        switch = fswitch(X,AA,BB)
+        SUM = TOTAL *(1d0-SWITCH)+SWITCH*TOTAL2
+        TOTAL = SUM
+      endif
+C       WRITE(40+II,*) II,X,TOTAL
    16 RETURN
+
 
    17 STOP 'WRONG LAMBDA IN VSTAR ROUTINE '
       RETURN
@@ -240,3 +277,18 @@ C ----------------------------------------------------
         RR(I) = VRKHS(R,N,M,L,NRA(I),BETA,RPT(1,I),ALPHA(1,I))
       ENDDO
       END
+C ======= ======= ======= ======= ======= ======= =======
+      double precision function fswitch(r,a,b)
+C ======= ======= ======= ======= ======= ======= =======
+      implicit real*8(a-h,o-z)
+      pi2=1.570796326794897
+      fswitch=0d0
+      if(r.le.a) then
+         fswitch=0d0
+      elseif(r.ge.b) then
+         fswitch=1d0
+      else
+         x=((r-b)-(a-r))/(b-a)
+         fswitch=0.5d0+0.25d0*dsin(pi2*x)*(3d0-(dsin(pi2*x))**2)
+      endif
+      end

@@ -943,13 +943,13 @@ C  THE OPTIONAL EXPONENT)
       WRITE(C2,'(I3)') L2
 
       F931="(/3X,'ENERGY (CM-1)',2X,"
-      F941="(A1,1P,G17.10," ! THIS IS ENERGY
+      F941="(A1,1P,E17.11," ! THIS IS ENERGY
 
       F932=TRIM(CLEFV)//"("//TRIM(C1)//"X,A"//TRIM(CEFVN)//",4X),"
-      F942=TRIM(CLEFV)//"("//TRIM(C2)//"X,G16.9)," !  THIS IS THE LIST OF EFVS
+      F942=TRIM(CLEFV)//"("//TRIM(C2)//"X,E16.9)," !  THIS IS THE LIST OF EFVS
 
       F933="'  JTOTL  JSTEP  JTOTU',6X,'F    I',9X,'SIG(F,I)')"
-      F943="0P,3I7,2X,2I5,8X,1P,G13.6,1X:,A1)" ! THIS THE REST
+      F943="0P,3I7,2X,2I5,8X,1P,E15.6,1X:,A1)" ! THIS THE REST
 
 C  THESE FORMAT STATEMENTS ARE USED IN OUTSIG FOR SUMMARY WRITTEN TO STDOUT
       F302="(/'  OUTSIG: DA FILE (',I2,') UPDATED WITH SIGMA "//
@@ -966,7 +966,7 @@ C  THESE FORMAT STATEMENTS ARE USED IN OUTSIG FOR SUMMARY WRITTEN TO STDOUT
       ENDIF
       IF (EF.NE.1.D0) F931=TRIM(ADJUSTL(F931))//
      1                     "3X,'ENERGY ',A10,1X,"
-      IF (EF.NE.1.D0) F941=TRIM(ADJUSTL(F941))//"2X,G17.10,2X,"
+      IF (EF.NE.1.D0) F941=TRIM(ADJUSTL(F941))//"2X,E17.10,2X,"
       IF (LENEFV.GT.0) THEN
         F300=TRIM(F941)//TRIM(F942)//TRIM(F943)
         F945=TRIM(F931)//TRIM(F932)//TRIM(F933)
@@ -1173,8 +1173,14 @@ C
                     WRITE(6,FMT=F300) SPACE,EK,EK/EF,
      1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
      2                                MN,JTSTEP,MXJ,IIT,IT,SIJ,SPACE
+                    WRITE(100,FMT=F300) SPACE,EK,EK/EF,
+     1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
+     2                                MN,JTSTEP,MXJ,IIT,IT,SIJ,SPACE
                   ELSE
                     WRITE(6,FMT=F300) SPACE,EK,
+     1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
+     2                                MN,JTSTEP,MXJ,IIT,IT,SIJ,SPACE
+                    WRITE(100,FMT=F300) SPACE,EK,EK/EF,
      1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
      2                                MN,JTSTEP,MXJ,IIT,IT,SIJ,SPACE
                   ENDIF
@@ -1183,8 +1189,14 @@ C
                     WRITE(6,FMT=F300) SPACE,EK,EK/EF,
      1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
      2                                MN,JTSTEP,MXJ,IIT,IT,ABS(SIJ),STAR
+                    WRITE(100,FMT=F300) SPACE,EK,EK/EF,
+     1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
+     2                                MN,JTSTEP,MXJ,IIT,IT,ABS(SIJ),STAR
                   ELSE
                     WRITE(6,FMT=F300) SPACE,EK,
+     1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
+     2                                MN,JTSTEP,MXJ,IIT,IT,ABS(SIJ),STAR
+                    WRITE(100,FMT=F300) SPACE,EK,
      1                                (EFV(IEFV),IEFV=IEFVST,NEFVP),
      2                                MN,JTSTEP,MXJ,IIT,IT,ABS(SIJ),STAR
                   ENDIF

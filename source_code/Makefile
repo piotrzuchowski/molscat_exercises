@@ -14,8 +14,11 @@ EXECDIR = .
 #
 # possible alternatives:
 # 1) gfortran
-Compiler = gfortran
-LIBS     = -llapack -lblas
+Compiler = ifort  -O3 
+LIBS = -L/usr/local/intel/15.0.1.133/mkl/lib/em64t/ \
+       -lmkl_intel_lp64 -lmkl_intel_thread \
+       -lmkl_core -liomp5 # this for ifort
+# LIBS = -lblas -llapack
 # 2) ifort
 #Compiler = ifort
 #LIBS     =
@@ -29,7 +32,7 @@ LIBS     = -llapack -lblas
 # set up recipe rules ========================================================
 #
 # set flags for compilation
-COMPILE.f = $(Compiler) -c  -O0 -g
+COMPILE.f = $(Compiler) -c  
 LINK.f    = $(Compiler)
 #
 # pattern matching rules for generating object files from source code ========
@@ -43,27 +46,50 @@ $(OBJDIR)/%.o: %.f90
 #
 $(OBJDIR)/pot_data_Tiemann-%.o: pot_data_Tiemann-%.f pot_data_tiemann.mod
 	rm $(OBJDIR)/vstar-Tiemann*.o ; $(COMPILE.f) $< -o $@
+$(OBJDIR)/mod_common.o: mod_common.f90 
+	$(COMPILE.f) $< -o $@
 ##############################################################################
 #
 # recipe rules for module files (to ensure they are remade when necessary) ===
 #
+physical_constants.mod: physical_constants.f $(OBJDIR)/physical_constants.o
+	@true
+sizes.mod:              sizes_module.f       $(OBJDIR)/sizes_module.o
+	@true
 angles.mod:             angles_module.f      $(OBJDIR)/angles_module.o
-	@true
-base9_suite.mod:        base9-skeleton.f     $(OBJDIR)/base9-skeleton.o
-	@true
-basis_data.mod:         basis_module.f       $(OBJDIR)/basis_module.o
 	@true
 efvs.mod:               efvs_module.f        $(OBJDIR)/efvs_module.o
 	@true
-physical_constants.mod: physical_constants.f $(OBJDIR)/physical_constants.o
-	@true
 potential.mod:          potential_module.f   $(OBJDIR)/potential_module.o
 	@true
-sizes.mod:              sizes_module.f       $(OBJDIR)/sizes_module.o
+basis_data.mod:         basis_module.f       $(OBJDIR)/basis_module.o
+	@true
+base9_suite.mod:        base9-skeleton.f     $(OBJDIR)/base9-skeleton.o
+	@true
+mod_dimer.mod:          mod_dimer.f90        $(OBJDIR)/mod_dimer.o
+	@true
+file_dir.mod double.mod const.mod utility.mod weight.mod:  mod_common.f90     $(OBJDIR)/mod_common.o 
 	@true
 ##############################################################################
 #
 # lists of object codes that have a dependency on a particular module =======
+#
+# physical constants module =================================================
+#
+PHYS_CONST_DEPS = base9-1S_3Sigma_cpld.o base9-alk_alk.o \
+                  bd.driver.o chckru.o eavg.o ecnv.o extpot-Ar_CH4.o \
+                  extpot-Ar_CO2.o extpot-Rg_HX.o fld.driver.o mol.driver.o \
+                  pot_data_Tiemann-Rb2-2010.o surbas.o \
+
+(addprefix $(OBJDIR)/,$(PHYS_CONST_DEPS)): physical_constants.mod
+#
+# sizes module ==============================================================
+#
+SIZES_DEPS =      angles_module.o basis_module.o bd.driver.o eavg.o \
+                  fld.driver.o iosbin.o iosout.o j6to4.o locpol.o \
+                  mol.driver.o potential_module.o prbr.o restrt.o setefv.o
+
+(addprefix $(OBJDIR)/,$(SIZES_DEPS)): sizes.mod
 #
 # angles module =============================================================
 #
@@ -72,15 +98,6 @@ ANGLES_DEPS =     iosbin.o iosout.o potenl-Rg_H2.o potenl.o vrtp-He_H2O.o \
                   vrtp-extpot_2ang.o \
 
 (addprefix $(OBJDIR)/,$(ANGLES_DEPS)): angles.mod
-#
-# basis_data module =========================================================
-#
-BASIS_DEPS =      asrot.o base.o base9-1S_3Sigma_cpld.o base9-alk_alk.o \
-                  base-skeleton.o getlev.o iosbin.o iosout.o iospb.o \
-                  j6to4.o mol.driver.o output.o prbr.o restrt.o set4.o set6.o \
-                  set6c.o setbas.o surbas.o thresh.o \
-
-(addprefix $(OBJDIR)/,$(BASIS_DEPS)): basis_data.mod
 #
 # efvs module ===============================================================
 #
@@ -91,15 +108,6 @@ EFVS_DEPS =       base.o base9-1S_3Sigma_cpld.o base9-alk_alk.o \
                   scapot-default.o setefv.o wvhead.o \
 
 (addprefix $(OBJDIR)/,$(EFVS_DEPS)): efvs.mod
-#
-# physical constants module =================================================
-#
-PHYS_CONST_DEPS = base9-1S_3Sigma_cpld.o base9-alk_alk.o \
-                  bd.driver.o chckru.o eavg.o ecnv.o extpot-Ar_CH4.o \
-                  extpot-Ar_CO2.o extpot-Rg_HX.o fld.driver.o mol.driver.o \
-                  pot_data_Tiemann-Rb2-2010.o surbas.o \
-
-(addprefix $(OBJDIR)/,$(PHYS_CONST_DEPS)): physical_constants.mod
 #
 # potential module ==========================================================
 #
@@ -112,13 +120,20 @@ POTL_DEPS =       base.o base9-1S_3Sigma_cpld.o base9-alk_alk.o \
 
 (addprefix $(OBJDIR)/,$(POTL_DEPS)): potential.mod
 #
-# sizes module ==============================================================
+# basis_data module =========================================================
 #
-SIZES_DEPS =      angles_module.o basis_module.o bd.driver.o eavg.o \
-                  fld.driver.o iosbin.o iosout.o j6to4.o locpol.o \
-                  mol.driver.o potential_module.o prbr.o restrt.o setefv.o
+BASIS_DEPS =      asrot.o base.o base9-1S_3Sigma_cpld.o base9-alk_alk.o \
+                  base-skeleton.o getlev.o iosbin.o iosout.o iospb.o \
+                  j6to4.o mol.driver.o output.o prbr.o restrt.o set4.o set6.o \
+                  set6c.o setbas.o surbas.o thresh.o \
 
-(addprefix $(OBJDIR)/,$(SIZES_DEPS)): sizes.mod
+(addprefix $(OBJDIR)/,$(BASIS_DEPS)): basis_data.mod
+#
+# autopes module ============================================================
+#
+# AUTOPES_DEPS =    extpot_autopes.o 
+#
+# (addprefix $(OBJDIR)/,$(ANGLES_DEPS)): angles.mod
 ##############################################################################
 #
 # Now set aliases to shorten lists of dependencies ===========================
@@ -179,11 +194,18 @@ ARCH4-POTENL   = $(GP-POTENL) vstar-Rg_CH4_Buck.o vrtp-extpot_2ang.o extpot-Ar_C
 ARCO2-POTENL   = $(GP-POTENL) vstar-dummy.o       vrtp-extpot_1ang.o extpot-Ar_CO2.o \
                               sumleg.o
 MGNH-POTENL    = $(GP-POTENL) vstar-Mg_NH.o       vrtp-dummy.o
+SrO2-POTENL    = $(GP-POTENL) vstar-A_BC.o       vrtp-dummy.o
 RGH2-POTENL    = potenl-Rg_H2.o $(POTUTILS)
+HECO-POTENL    = $(GP-POTENL) vstar-He_CO.o       vrtp-dummy.o  
 #
 # note that modules must come before object codes that use them
+ErLi-POTENL     = vstar_Li.2S+Er.3H_m2S1.mod.o \
+                 $(GP-POTENL)  vrtp-dummy.o
 RB2-POTENL     = pot_data_Tiemann-Rb2-2010.o \
                  $(GP-POTENL) vstar-Tiemann.o     vrtp-dummy.o
+ATLR-POTENL    = mod_common.o mod_dimer.o $(GP-POTENL) vstar-A_BC.o       vrtp-dummy.o   extpot-autopes.o \
+                              sumleg.o pleg.o pasleg.o assleg.o
+ATLR-POT       = $(GP-POTENL) vstar-A_BC.o       vrtp-dummy.o  
 #
 # dependencies needed for plug-in basis-set suites ==========================
 #
@@ -191,7 +213,11 @@ UNUSED-BASE9 = base9-skeleton.o \
                efv9-dummy.o degen9-nondegenerate.o thrsh9-dummy.o
 ALK2-BASE9   = base9-alk_alk.o \
                efv9-dummy.o degen9-nondegenerate.o
+A_BC-BASE9   = base9-1S_3Sigma_cpld_mod.o \
+               efv9-dummy.o degen9-nondegenerate.o potin9-example.o
 MGNH-BASE9   = base9-1S_3Sigma_cpld.o \
+               efv9-dummy.o degen9-nondegenerate.o potin9-example.o
+ErLi-BASE9   = base9-Sat_Lat_wf_whf_cpld.o cHc_from_dHd.o \
                efv9-dummy.o degen9-nondegenerate.o potin9-example.o
 #
 # set up 'normal' set of object files dependencies ==========================
@@ -204,21 +230,20 @@ BASIC_FLD = $(MODULES) main1M.o fld.driver.o $(CLOCK) $(DIAG) $(LA_UTILS) $(FLD)
 # list of targets (which are all executables) ================================
 #
 PROGS =     molscat-basic \
-            molscat-H2_H2 molscat-Rg_HX  molscat-Rg_CO2 \
-            molscat-Rg_H2 molscat-Ar_CH4 molscat-Mg_NH \
+            molscat-H2_H2 molscat-Rg_HX molscat-at_linrot  molscat-Rg_CO2 \
+            molscat-Rg_H2 molscat-Ar_CH4 molscat-Mg_NH molscat-A_BC_1s2S \
             molscat-Rb2 \
-            bound-basic \
+            bound-basic bound-A_BC\
             bound-Rg_HX   bound-Rb2      bound-Ar_CH4 \
             bound-H2_H2   bound-Rg_H2    bound-Mg_NH \
             bound-Rg_CO2  \
-            field-basic \
-            field-Mg_NH   field-Rb2
-USER-PROGS = 
+            field-basic molscat_ErLi field_ErLi\
+            field-Mg_NH   field-Rb2  molscat-He_CO
 ##############################################################################
 #
 # rules for making executables ===============================================
 #
-.PHONY: $(PROGS) $(USER-PROGS)
+.PHONY: $(PROGS)
 #$(PROGS) : %: $(EXECDIR)/%
 
 $(EXECDIR)/molscat-basic     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
@@ -245,7 +270,15 @@ $(EXECDIR)/molscat-Ar_CH4    : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
                                                       $(UNUSED-BASE9) \
                                                       $(ARCH4-POTENL))
 	$(LINK.f) $^ $(LIBS) -o $@
+$(EXECDIR)/molscat_ErLi      : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(ErLi-BASE9) \
+                                                      $(ErLi-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
 $(EXECDIR)/molscat-Mg_NH     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(MGNH-BASE9) \
+                                                      $(MGNH-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
+$(EXECDIR)/molscat-A_BC_1s2S : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
                                                       $(MGNH-BASE9) \
                                                       $(MGNH-POTENL))
 	$(LINK.f) $^ $(LIBS) -o $@
@@ -296,4 +329,17 @@ $(EXECDIR)/field-Rb2         : $(addprefix $(OBJDIR)/,$(BASIC_FLD) \
 $(EXECDIR)/field-Mg_NH       : $(addprefix $(OBJDIR)/,$(BASIC_FLD) \
                                                       $(MGNH-BASE9) \
                                                       $(MGNH-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
+# piotr 	
+$(EXECDIR)/molscat-He_CO     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(UNUSED-BASE9) \
+                                                      $(HECO-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
+$(EXECDIR)/molscat-at_linrot : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(UNUSED-BASE9) \
+                                                      $(ATLR-POT))
+	$(LINK.f) $^ $(LIBS) -o $@
+$(EXECDIR)/molscat-Sr_O2     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(MGNH-BASE9) \
+                                                      $(SrO2-POTENL))
 	$(LINK.f) $^ $(LIBS) -o $@

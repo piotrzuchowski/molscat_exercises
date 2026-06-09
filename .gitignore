@@ -1,0 +1,71 @@
+# ───────────────── Fortran / MOLSCAT build artifacts ─────────────────
+*.o
+*.mod
+*.back
+# compiled executables (no extension); source files keep their .f/.f90 ext
+source_code/molscat-*
+source_code/bound-*
+!source_code/*.f
+!source_code/*.f90
+
+# ───────────────── editor / OS / python ─────────────────
+*.swp
+*.swo
+*~
+.DS_Store
+__pycache__/
+*.pyc
+# machine-local Claude Code settings (keep shared .claude/settings.json)
+.claude/settings.local.json
+
+# ───────────────── archives ─────────────────
+*.tgz
+*.tar.gz
+*.gz
+*.zip
+
+# ───────────────── MOLSCAT run outputs ─────────────────
+*.out
+*.err
+fort.*
+fort.100
+*.log
+*.nohup
+# MOLSCAT stdout dumps that lack a .out extension (out, out10, out_j1.txt,
+# out.He_CO …). Anchored so source 'output.f' (starts 'outp') is NOT matched.
+out
+out[0-9]*
+out_*
+out.*
+
+# ───────────────── bulky generated result data ─────────────────
+# huge per-transition cross-section dumps and exported bundles (regenerable)
+**/s2s_xs_all.csv
+**/s2s_kT_coeffs.csv
+**/molscat_xsec.csv
+analysis_export/
+# campaign scratch: decks + logs are regenerable from the build scripts
+**/production/**/*.inp
+**/production/logs/
+**/production/decks/
+
+# scratch run directories (dominated by MOLSCAT output dumps, GBs)
+Sr_SrOHtests/
+examples/tasq/
+source_code/test/
+
+# generated campaign decks + per-potential result CSVs (regenerable from the
+# build_*.py / make_decks.py scripts which ARE tracked)
+production/batch*/
+# smoke_test: keep the scripts (make_decks.py, parse_xs.py, run_smoke.sbatch),
+# drop generated decks/results (subdir variants + top-level pot* files)
+smoke_test/*/
+smoke_test/pot*
+smoke_test/inputs.list
+smoke_test/manifest.csv
+smoke_test/err*.txt
+
+# keep the small reproducible inputs explicitly (in case a rule above is widened)
+!potentials_library.csv
+!**/potentials_library.csv
+!potentials_log.csv

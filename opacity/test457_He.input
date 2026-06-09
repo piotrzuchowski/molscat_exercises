@@ -1,0 +1,27 @@
+ &INPUT
+    LABEL  = 'lib id 457  partner He  (opacity test)',
+    URED   = 3.297528,
+    IPRINT = 3,    ISIGPR = 2,
+    RMIN   = 2.1129,  RMAX   = 40.0000,  IRMSET = 0,
+    IPROPS = 6,    DR     = 0.04,
+    JTOTL  = 0,    JTOTU  = 99999,   JSTEP = 1,   DTOL = 10.0,
+    NNRG   = 2,
+    ENERGY = 0.695000, 6.950000,
+ /
+
+ &BASIS
+    ITYPE  = 1,   BE     = 0.07943268,
+    NLEVEL = 16,
+    JLEVEL = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+ /
+
+ &POTL
+    MXLAM  = 3,   LAMBDA = 0, 1, 2,
+    NTERM  = 2, 2, 2,
+    NPOWER = 0, -6,  0, -6,  0, -6,
+    A      = 2.51320602E+08, -3.96779843E+04,
+                    -3.34999021E+07, 3.16895067E+03,
+                    4.98979175E+06, -7.87778149E+02,
+    E      = -4.72742702E+00, -4.72742702E+00, -4.72742702E+00,
+    RM     = 1.0, EPSIL  = 1.0,
+ /
