@@ -43,6 +43,9 @@ out.*
 **/s2s_xs_all.csv
 **/s2s_kT_coeffs.csv
 **/molscat_xsec.csv
+**/run_status.csv
+# 14MB candidate log (regenerable from the generator)
+decoupled_v3/potentials_log.csv
 analysis_export/
 # campaign scratch: decks + logs are regenerable from the build scripts
 **/production/**/*.inp
@@ -65,7 +68,13 @@ smoke_test/inputs.list
 smoke_test/manifest.csv
 smoke_test/err*.txt
 
+# campaign scratch job-id trackers
+**/.smoke
+**/.timing
+**/.timeids
+
 # keep the small reproducible inputs explicitly (in case a rule above is widened)
 !potentials_library.csv
 !**/potentials_library.csv
-!potentials_log.csv
+# NOTE: do NOT globally un-ignore potentials_log.csv -- the decoupled_v3 one is
+# 14MB; the already-committed root/v2 logs stay tracked regardless.
