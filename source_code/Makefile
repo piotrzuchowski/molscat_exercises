@@ -197,6 +197,11 @@ MGNH-POTENL    = $(GP-POTENL) vstar-Mg_NH.o       vrtp-dummy.o
 SrO2-POTENL    = $(GP-POTENL) vstar-A_BC.o       vrtp-dummy.o
 RGH2-POTENL    = potenl-Rg_H2.o $(POTUTILS)
 HECO-POTENL    = $(GP-POTENL) vstar-He_CO.o       vrtp-dummy.o  
+# model potentials of the MLScat project (github.com/piotrzuchowski/MLScat, PotentialGenerator/
+# MODEL_POTENTIAL_MLR_MORSE*.md); parameters are read from model_MLR.inp / model_MLR_ion.inp
+MLR-POTENL     = $(GP-POTENL) vstar-model_MLR.o     vrtp-dummy.o
+MLRION-POTENL  = $(GP-POTENL) vstar-model_MLR_ion.o vrtp-dummy.o
+$(OBJDIR)/vstar-model_MLR.o $(OBJDIR)/vstar-model_MLR_ion.o: sizes.mod potential.mod
 #
 # note that modules must come before object codes that use them
 ErLi-POTENL     = vstar_Li.2S+Er.3H_m2S1.mod.o \
@@ -238,7 +243,8 @@ PROGS =     molscat-basic \
             bound-H2_H2   bound-Rg_H2    bound-Mg_NH \
             bound-Rg_CO2  \
             field-basic molscat_ErLi field_ErLi\
-            field-Mg_NH   field-Rb2  molscat-He_CO
+            field-Mg_NH   field-Rb2  molscat-He_CO \
+            molscat_model_MLR molscat_model_MLR_ion
 ##############################################################################
 #
 # rules for making executables ===============================================
@@ -342,4 +348,13 @@ $(EXECDIR)/molscat-at_linrot : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
 $(EXECDIR)/molscat-Sr_O2     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
                                                       $(MGNH-BASE9) \
                                                       $(SrO2-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
+# MLScat model potentials (MLR + Morse-like anisotropy; neutral and ionic variants)
+$(EXECDIR)/molscat_model_MLR     : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(UNUSED-BASE9) \
+                                                      $(MLR-POTENL))
+	$(LINK.f) $^ $(LIBS) -o $@
+$(EXECDIR)/molscat_model_MLR_ion : $(addprefix $(OBJDIR)/,$(BASIC_MOL) \
+                                                      $(UNUSED-BASE9) \
+                                                      $(MLRION-POTENL))
 	$(LINK.f) $^ $(LIBS) -o $@

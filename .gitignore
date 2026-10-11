@@ -5,6 +5,8 @@
 # compiled executables (no extension); source files keep their .f/.f90 ext
 source_code/molscat-*
 source_code/bound-*
+source_code/molscat_model_MLR
+source_code/molscat_model_MLR_ion
 !source_code/*.f
 !source_code/*.f90
 
